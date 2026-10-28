@@ -191,6 +191,45 @@ namespace Proyecto02_02
 			get { return espera; }
 			set { espera = value; }
 		}
+		private List<string> idClientes;
+
+		public List<string> IdClientes
+		{
+			get { return idClientes; }
+			set { idClientes = value; }
+		}
+		private List<string> idTecnicos;
+
+		public List<string> IdTecnicos
+		{
+			get { return idTecnicos; }
+			set { idTecnicos = value; }
+		}
+
+		private List<string> idEquipos;
+
+		public List<string> IdEquipos
+		{
+			get { return idEquipos; }
+			set { idEquipos = value; }
+		}
+
+		private List<string> idSolicitudes;
+
+		public List<string> IdSolicitudes
+		{
+			get { return idSolicitudes; }
+			set { idSolicitudes = value; }
+		}
+		private List<string> idRepuestos;
+
+		public List<string> IdRepuestos
+		{
+			get { return idRepuestos; }
+			set { idRepuestos = value; }
+		}
+
+		private Random rand;
 
 		public Tecnico AsignarTecnico()
 		{
@@ -206,12 +245,87 @@ namespace Proyecto02_02
 		{
 			//modificar luego
 		}
+		public string GenerarId(string inicio)
+		{
+			string idrand;
+			int numeros = rand.Next(10000, 100000);
+			if(inicio == "CLT")
+			{
+				idrand = inicio + numeros;
+				foreach(string i in idClientes)
+				{
+					if (i.Equals(idrand))
+					{
+						GenerarId(inicio);
+					}
+				}
+				idClientes.Add(idrand);
+				return idrand;
+			}
+            else if (inicio == "TEC")
+            {
+                idrand = inicio + numeros;
+                foreach (string i in idTecnicos)
+                {
+                    if (i.Equals(idrand))
+                    {
+                        GenerarId(inicio);
+                    }
+                }
+                idTecnicos.Add(idrand);
+                return idrand;
+            }
+            else if (inicio == "DIS")
+            {
+                idrand = inicio + numeros;
+                foreach (string i in idEquipos)
+                {
+                    if (i.Equals(idrand))
+                    {
+                        GenerarId(inicio);
+                    }
+                }
+                idEquipos.Add(idrand);
+                return idrand;
+            }
+            else if (inicio == "SLC")
+            {
+                idrand = inicio + numeros;
+                foreach (string i in idSolicitudes)
+                {
+                    if (i.Equals(idrand))
+                    {
+                        GenerarId(inicio);
+                    }
+                }
+                idSolicitudes.Add(idrand);
+                return idrand;
+            }
+            else
+			{
+                idrand = inicio + numeros;
+                foreach (string i in idRepuestos)
+                {
+                    if (i.Equals(idrand))
+                    {
+                        GenerarId(inicio);
+                    }
+                }
+                idRepuestos.Add(idrand);
+                return idrand;
+            }
+        }
 		public Administracion()
 		{
 			Tecnicos = new List<Tecnico>();
 			Solicitudes = new Queue<Solicitud>();
 			Urgentes = new Queue<Solicitud>();
 			Espera = new Queue<Solicitud>();
+			IdClientes = new List<string>();
+			IdEquipos = new List<string>();
+			IdTecnicos = new List<string>();
+			IdRepuestos = new List<string>();
+			IdSolicitudes = new List<string>();
 		}
 	}
 	internal class Reportes

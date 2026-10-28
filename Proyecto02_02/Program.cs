@@ -75,7 +75,7 @@ namespace Proyecto02_02
             void MenuClientes()
             {
                 int opcionCliente, tipoCliente;
-                string nombreCliente, correoElectronico, numTelefono;
+                string nombreCliente, correoElectronico, numTelefono, idCliente;
 
                 do
                 {
@@ -96,7 +96,7 @@ namespace Proyecto02_02
                     switch(opcionCliente)
                     {
                         case 1:
-                            //generar id "CLT"
+                            idCliente = admin.GenerarId("CLT");
                             do
                             {
                                 Console.WriteLine("Ingrese el nombre del cliente (entre 10 a 50 caracteres): ");
