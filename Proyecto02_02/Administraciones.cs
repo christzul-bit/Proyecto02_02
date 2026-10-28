@@ -137,7 +137,132 @@ namespace Proyecto02_02
 			return reparacion + repuestos;
 		}
 		//metodo para actualizar estado. pendiente
+		public Solicitud(string id, Cliente porpietario, Equipo dispositivo, string descripcion, DateTime entrada, DateTime fin, bool prioridad, tipoEstado estado, Tecnico tecnico, string diagnostico, double costoReparacion, double costoRepuesto, double total)
+		{
+			ID = id;
+			Propietario = porpietario;
+			Dispositivo = dispositivo;
+			Descripcion = descripcion;
+			FechaEntrada = entrada;
+			FechaLimite = fin;
+			Prioridad = prioridad;
+			Estado = estado;
+			TecnicoAsignado = tecnico;
+			Diagnostico = diagnostico;
+			CostoReparacion = costoReparacion;
+			CostoRepuesto = costoRepuesto;
+			Total = total;
+		}
+	}
+    internal class Administracion
+    {
+		private Solicitud pedido;
 
+		public Solicitud Pedido
+		{
+			get { return pedido; }
+			set { pedido = value; }
+		}
+		private List<Tecnico> tecnicos;
 
+		public List<Tecnico> Tecnicos
+		{
+			get { return tecnicos; }
+			set { tecnicos = value; }
+		}
+		private Queue<Solicitud> solicitudes;
+
+		public Queue<Solicitud> Solicitudes
+		{
+			get { return solicitudes; }
+			set { solicitudes = value; }
+		}
+		private Queue<Solicitud> urgentes;
+
+		public Queue<Solicitud> Urgentes
+		{
+			get { return urgentes; }
+			set { urgentes = value; }
+		}
+		private Queue<Solicitud> espera;
+
+		public Queue<Solicitud> Espera
+		{
+			get { return espera; }
+			set { espera = value; }
+		}
+
+		public Tecnico AsignarTecnico()
+		{
+			return tecnicos[1];
+			//modificar luego
+		}
+		public Solicitud SiguienteSolicitud()
+		{
+			return solicitudes.Dequeue();
+			//modificar luego
+		}
+		public void AdministrarSolicitud(Solicitud solicitud)
+		{
+			//modificar luego
+		}
+		public Administracion()
+		{
+			Tecnicos = new List<Tecnico>();
+			Solicitudes = new Queue<Solicitud>();
+			Urgentes = new Queue<Solicitud>();
+			Espera = new Queue<Solicitud>();
+		}
+	}
+	internal class Reportes
+	{
+		private List<Solicitud> completados;
+
+		public List<Solicitud> Completados
+		{
+			get { return completados; }
+			set { completados = value; }
+		}
+		private List<Repuesto> repuestos;
+
+		public List<Repuesto> Repuestos
+		{
+			get { return repuestos; }
+			set { repuestos = value; }
+		}
+		private string[,] historialSemanal;
+
+		public string[,] HistorialSemanal
+		{
+			get { return historialSemanal; }
+			set { historialSemanal = value; }
+		}
+
+		public void MostrarPendientes()
+		{
+			//modificar luego
+		}
+
+		public void MostrarSolicitudes()
+		{
+			//modificar luego
+		}
+		public void MostrarUrgentes() { }
+		public void MostrarCompletados() { }
+		public void MostrarTecnicosDisponibles() { }
+		public void MostrarCompletadosTecnico() { }
+		public void MostrarEquiposAtendidos() { }
+		public void MostrarSolicitudesPorCosto() { }
+		public void MostrarSolicitudesPorTiempo() { }
+		public void MostrarRepuestosExistentes() { }
+		public void MostrarIngresosTotales() { }
+		public void MostrarHistorialSemanal() { }
+
+		public Reportes(int filas)
+		{
+			Completados = new List<Solicitud>();
+			HistorialSemanal = new string[7, filas];
+			//ver mas detalles luego
+		}
 	}
 }
