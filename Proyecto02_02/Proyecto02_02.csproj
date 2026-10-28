@@ -44,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Administraciones.cs" />
+    <Compile Include="Excepciones.cs" />
+    <Compile Include="Decorado.cs" />
     <Compile Include="Equipos.cs" />
     <Compile Include="Personas.cs" />
     <Compile Include="Program.cs" />
