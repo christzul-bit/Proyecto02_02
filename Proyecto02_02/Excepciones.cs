@@ -32,5 +32,9 @@ namespace Proyecto02_02
         {
             Texto.MensajeError("El dato que has ingresado no posee los caracteres requeridos.");
         }
+        public Excepciones()
+        {
+            Texto = new Decorar();
+        }
     }
 }

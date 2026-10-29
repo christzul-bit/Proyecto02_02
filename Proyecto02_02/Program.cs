@@ -16,8 +16,6 @@ namespace Proyecto02_02
             Decorar texto = new Decorar();
             Excepciones fallo = new Excepciones();
             Administracion admin = new Administracion();
-
-            List<Cliente> clientes = new List<Cliente>();
             void MenuPrincipal()
             {
                 int opcion;
@@ -74,8 +72,9 @@ namespace Proyecto02_02
             }
             void MenuClientes()
             {
-                int opcionCliente, tipoCliente;
-                string nombreCliente, correoElectronico, numTelefono, idCliente;
+                Cliente cliente;
+                int opcionCliente, tipoCliente, telefono;
+                string nombreCliente, correoElectronico, numTelefono;
 
                 do
                 {
@@ -96,7 +95,6 @@ namespace Proyecto02_02
                     switch(opcionCliente)
                     {
                         case 1:
-                            idCliente = admin.GenerarId("CLT");
                             do
                             {
                                 Console.WriteLine("Ingrese el nombre del cliente (entre 10 a 50 caracteres): ");
@@ -108,8 +106,8 @@ namespace Proyecto02_02
                                         fallo.DatoFueraRando();
                                     }else { break; }
                                     
-                                }
-                                fallo.DatoVacio();
+                                }else { fallo.DatoVacio(); }
+                                
                             } while (true);
                             do
                             {
@@ -121,10 +119,15 @@ namespace Proyecto02_02
                                     {
                                         fallo.DatoFueraRando();
                                     }
-                                    else { break; }
+                                    else {
+                                        if(!int.TryParse(numTelefono, out telefono))
+                                        {
+                                            fallo.IntFalse();
+                                        }else { break; }
+                                    }
 
-                                }
-                                fallo.DatoVacio();
+                                }else { fallo.DatoVacio(); }
+
                             } while (true);
                             do
                             {
@@ -147,8 +150,8 @@ namespace Proyecto02_02
                                         }
                                     }
 
-                                }
-                                fallo.DatoVacio();
+                                }else { fallo.DatoVacio(); }
+                                
                             } while (true);
                             do
                             {
@@ -168,17 +171,44 @@ namespace Proyecto02_02
                             } while (true);
                             if(tipoCliente == 1)
                             {
-                                //se crea el cliente con el tipo personal
+                                cliente = new Cliente(admin.GenerarId("CLT"), nombreCliente,telefono,correoElectronico,Cliente.tipoClientes.Persona,0);
                             }else if(tipoCliente == 2)
                             {
-                                //se crea el cliente con el tipo empresarial
+                                cliente = new Cliente(admin.GenerarId("CLT"), nombreCliente, telefono, correoElectronico, Cliente.tipoClientes.Empresarial, 0);
                             }
                             else
                             {
-                                //se crea el cliente con el tipo estudiante
+                                cliente = new Cliente(admin.GenerarId("CLT"), nombreCliente, telefono, correoElectronico, Cliente.tipoClientes.Estudiante, 0);
                             }
-                            //se guarda en clientes
+                            admin.Clientes.Add(cliente);
+                            texto.MensajeExito("Cliente registrado correctamente");
                             break;
+                        case 2:
+                            if(admin.Clientes.Count == 0)
+                            {
+                                Console.WriteLine("No se han registrado clientes.");
+                            }else
+                            {
+                                //codigo de busqueda
+                            }
+                            texto.Pausa();
+                            break;
+                        case 3:
+                            if (admin.Clientes.Count == 0)
+                            {
+                                Console.WriteLine("No se han registrado clientes.");
+                            }
+                            else
+                            {
+                                foreach(Cliente i in admin.Clientes)
+                                {
+                                    i.MostrarInfo();
+                                    Console.WriteLine();
+                                }
+                            }
+                            texto.Pausa();
+                            break;
+                        case 4: break;
                         default: fallo.OpcionInvalida(); break;
                     }
                 } while (opcionCliente != 4);

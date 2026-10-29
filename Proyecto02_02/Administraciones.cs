@@ -228,10 +228,19 @@ namespace Proyecto02_02
 			get { return idRepuestos; }
 			set { idRepuestos = value; }
 		}
+        private List<Cliente> clientes;
+
+		public List<Cliente> Clientes
+		{
+			get { return clientes; }
+			set { clientes = value; }
+		}
+
 
 		private Random rand;
 
-		public Tecnico AsignarTecnico()
+
+        public Tecnico AsignarTecnico()
 		{
 			return tecnicos[1];
 			//modificar luego
@@ -315,6 +324,10 @@ namespace Proyecto02_02
                 return idrand;
             }
         }
+		public void BusquedaId(string id)
+		{
+			//====
+		}
 		public Administracion()
 		{
 			Tecnicos = new List<Tecnico>();
@@ -326,7 +339,9 @@ namespace Proyecto02_02
 			IdTecnicos = new List<string>();
 			IdRepuestos = new List<string>();
 			IdSolicitudes = new List<string>();
-		}
+            Clientes = new List<Cliente>();
+			rand = new Random();
+        }
 	}
 	internal class Reportes
 	{
