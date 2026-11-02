@@ -519,6 +519,103 @@ namespace Proyecto02_02
             }
             return false;
         }
+        public void SolicitudesPorCosto(List<Solicitud> lista)
+        {
+            int n = lista.Count;
+            for (int i = 0; i < n - 1; i++)
+            {
+                for (int j = 0; j < n - i - 1; j++)
+                {
+                    if (lista[j].Total > lista[j + 1].Total)
+                    {
+                        Solicitud temp = lista[j];
+                        lista[j] = lista[j + 1];
+                        lista[j + 1] = temp;
+                    }
+                }
+            }
+        }
+        public void TecnicosPorServicios(List<Tecnico> lista)
+        {
+            int n = lista.Count;
+            for (int i = 0; i < n - 1; i++)
+            {
+                int minIdx = i;
+                for (int j = i + 1; j < n; j++)
+                {
+                    if (lista[j].ServiciosFinalizados < lista[minIdx].ServiciosFinalizados)
+                    {
+                        minIdx = j;
+                    }
+                }
+                if (minIdx != i)
+                {
+                    Tecnico temp = lista[minIdx];
+                    lista[minIdx] = lista[i];
+                    lista[i] = temp;
+                }
+            }
+        }
+        public void RepuestosPorExistencia(List<Repuesto> lista)
+        {
+            int n = lista.Count;
+            for (int gap = n / 2; gap > 0; gap /= 2)
+            {
+                for (int i = gap; i < n; i++)
+                {
+                    Repuesto temp = lista[i];
+                    int j = i;
+                    while (j >= gap && lista[j - gap].Existencias > temp.Existencias)
+                    {
+                        lista[j] = lista[j - gap];
+                        j -= gap;
+                    }
+                    lista[j] = temp;
+                }
+            }
+        }
+        private int ParticionQuickSort(List<Solicitud> lista, int bajo, int alto)
+        {
+            DateTime pivot = lista[alto].FechaEntrada;
+            int i = (bajo - 1);
+            for (int j = bajo; j < alto; j++)
+            {
+                if (lista[j].FechaEntrada <= pivot)
+                {
+                    i++;
+                    Solicitud temp = lista[i];
+                    lista[i] = lista[j];
+                    lista[j] = temp;
+                }
+            }
+            Solicitud temp1 = lista[i + 1];
+            lista[i + 1] = lista[alto];
+            lista[alto] = temp1;
+            return i + 1;
+        }
+        public void SolicitudesPorFecha(List<Solicitud> lista, int bajo, int alto)
+        {
+            if (bajo < alto)
+            {
+                int pi = ParticionQuickSort(lista, bajo, alto);
+                SolicitudesPorFecha(lista, bajo, pi - 1);
+                SolicitudesPorFecha(lista, pi + 1, alto);
+            }
+        }
+        public void BusquedaCliente(string nombreParcial)
+        {
+            bool encontrado = false;
+            Console.WriteLine($"\n--- Resultados de búsqueda secuencial para cliente: '{nombreParcial}' ---");
+            foreach (var c in clientes)
+            {
+                if (c.Nombre.IndexOf(nombreParcial, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    c.MostrarInfo();
+                    encontrado = true;
+                }
+            }
+            if (!encontrado) Console.WriteLine("No se encontraron clientes con ese nombre.");
+        }
         public Administracion()
 		{
 			Tecnicos = new List<Tecnico>();
@@ -552,39 +649,126 @@ namespace Proyecto02_02
 			get { return repuestos; }
 			set { repuestos = value; }
 		}
-		private string[,] historialSemanal;
+		private int[,] historialSemanal;
 
-		public string[,] HistorialSemanal
+		public int[,] HistorialSemanal
 		{
 			get { return historialSemanal; }
 			set { historialSemanal = value; }
 		}
 
-		public void MostrarPendientes()
+        public void MostrarPendientes(Queue<Solicitud> espera)
 		{
-			//modificar luego
-		}
+            foreach (Solicitud i in espera)
+            {
+                i.MostrarInfo();
+                Console.WriteLine(new string('-', 30));
+            }
+        }
 
-		public void MostrarSolicitudes()
+		public void MostrarSolicitudes(Queue<Solicitud> solicitudes)
 		{
-			//modificar luego
+            foreach (Solicitud i in solicitudes)
+            {
+                i.MostrarInfo();
+                Console.WriteLine(new string('-', 30));
+            }
+        }
+		public void MostrarUrgentes(Queue<Solicitud> urgentes) { 
+            foreach(Solicitud i in urgentes)
+            {
+                i.MostrarInfo();
+                Console.WriteLine(new string('-', 30));
+            }
+        }
+		public void MostrarCompletados() { 
+			foreach(Solicitud i in Completados)
+			{
+				i.MostrarInfo();
+                Console.WriteLine(new string('-', 30));
+            }
 		}
-		public void MostrarUrgentes() { }
-		public void MostrarCompletados() { }
-		public void MostrarTecnicosDisponibles() { }
-		public void MostrarCompletadosTecnico() { }
-		public void MostrarEquiposAtendidos() { }
-		public void MostrarSolicitudesPorCosto() { }
-		public void MostrarSolicitudesPorTiempo() { }
-		public void MostrarRepuestosExistentes() { }
+		public void MostrarTecnicosDisponibles(List<Tecnico> tecnicos) {
+            Console.WriteLine("\n--- REPORTE DE TÉCNICOS (DISPONIBLES Y CARGA COMPLETA) ---");
+            foreach (var t in tecnicos)
+            {
+                string estadoCarga = (t.TrabajosActivos >= t.LimiteTrabajos) ? "CARGA COMPLETA" : "DISPONIBLE";
+                Console.WriteLine($"Técnico: {t.Nombre} | Especialidad: {t.Especialidad} | Activos: {t.TrabajosActivos}/{t.LimiteTrabajos} | Estado: {estadoCarga}");
+            }
+        }
+        public void MostrarTecnicoTop(List<Tecnico> tecnicos)
+        {
+            if (tecnicos.Count == 0) return;
+            Tecnico top = tecnicos.OrderByDescending(t => t.ServiciosFinalizados).FirstOrDefault();
+            Console.WriteLine($"\n--- TÉCNICO CON MÁS SERVICIOS FINALIZADOS ---");
+            Console.WriteLine($"Nombre: {top.Nombre} | Servicios finalizados: {top.ServiciosFinalizados} | Calificación: {top.CalificacionPromedio:F1}");
+        }
+        public void MostrarEquiposAtendidos() { }
 		public void MostrarIngresosTotales() { }
-		public void MostrarHistorialSemanal() { }
+		public void MostrarHistorialSemanal(List<Tecnico> tecnicos) {
+            if (tecnicos == null || tecnicos.Count == 0)
+            {
+                Console.WriteLine("No hay técnicos registrados para generar la matriz semanal.");
+                return;
+            }
 
-		public Reportes(int filas)
+            string[] dias = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
+            int filas = tecnicos.Count;
+            int columnas = 7;
+
+            HistorialSemanal = new int[filas, columnas];
+            Random rand = new Random();
+
+            int maxCarga = -1;
+            string tecnicoMax = "";
+            string diaMax = "";
+
+            Console.WriteLine("\n=====================================================================");
+            Console.WriteLine("                   MATRIZ SEMANAL DE CARGA DE TRABAJO                ");
+            Console.WriteLine("=====================================================================");
+            Console.Write(string.Format("{0,-18}", "Técnico"));
+            foreach (var dia in dias)
+            {
+                Console.Write(string.Format("{0,-10}", dia));
+            }
+            Console.WriteLine();
+            Console.WriteLine(new string('-', 18 + (10 * columnas)));
+
+            for (int i = 0; i < filas; i++)
+            {
+                string nombreTec = tecnicos[i].Nombre;
+                if (nombreTec.Length > 15) nombreTec = nombreTec.Substring(0, 15);
+                Console.Write(string.Format("{0,-18}", nombreTec));
+
+                for (int j = 0; j < columnas; j++)
+                {
+                    // Asignamos una carga proporcional o simulada controlada basada en trabajos activos
+                    int carga = (j == 0) ? tecnicos[i].TrabajosActivos : rand.Next(0, 4);
+                    HistorialSemanal[i, j] = carga;
+
+                    Console.Write(string.Format("{0,-10}", carga));
+
+                    if (carga > maxCarga)
+                    {
+                        maxCarga = carga;
+                        tecnicoMax = tecnicos[i].Nombre;
+                        diaMax = dias[j];
+                    }
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("---------------------------------------------------------------------");
+            Console.WriteLine($"[ANÁLISIS DE CARGA]");
+            Console.WriteLine($"• Técnico con mayor carga: {tecnicoMax} ({maxCarga} solicitudes)");
+            Console.WriteLine($"• Día con mayor carga: {diaMax}");
+            Console.WriteLine("=====================================================================");
+        }
+        
+        public Reportes()
 		{
 			Completados = new List<Solicitud>();
-			HistorialSemanal = new string[7, filas];
-			//ver mas detalles luego
-		}
+            Repuestos = new List<Repuesto>();
+        }
 	}
 }

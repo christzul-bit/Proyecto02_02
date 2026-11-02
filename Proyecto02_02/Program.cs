@@ -60,10 +60,13 @@ namespace Proyecto02_02
                         case 6:
                             break;
                         case 7:
+                            MenuOrdenamientos();
                             break;
                         case 8:
+                            MenuBusquedas();
                             break;
                         case 9:
+                            MenuReportes();
                             break;
                         case 10:
                             break;
@@ -659,6 +662,189 @@ namespace Proyecto02_02
                     }
                     texto.Pausa();
                 } while (opSol != 4);
+            }
+            void MenuOrdenamientos()
+            {
+                int opOrd;
+                do
+                {
+                    texto.Titulo("Módulo de Ordenamientos Manuales", ConsoleColor.DarkBlue);
+                    do
+                    {
+                        Console.WriteLine("Seleccione el algoritmo de ordenamiento: ");
+                        texto.OpcionMenu("1.", "Solicitudes por Costo Total", ConsoleColor.Blue);
+                        texto.OpcionMenu("2.", "Técnicos por Servicios Finalizados", ConsoleColor.Blue);
+                        texto.OpcionMenu("3.", "Repuestos por Existencias", ConsoleColor.Blue);
+                        texto.OpcionMenu("4.", "Solicitudes por Fecha de Recepción", ConsoleColor.Blue);
+                        texto.OpcionMenu("5.", "Regresar al menú principal", ConsoleColor.Red);
+
+                        if (!int.TryParse(Console.ReadLine(), out opOrd))
+                        {
+                            fallo.IntFalse();
+                        }else { break; }
+                    } while (true);
+
+                    var todasSolicitudes = admin.Urgentes.Concat(admin.Solicitudes).ToList();
+
+                    switch (opOrd)
+                    {
+                        case 1:
+                            if (todasSolicitudes.Count == 0) { texto.MensajeError("No hay solicitudes suficientes."); break; }
+                            admin.SolicitudesPorCosto(todasSolicitudes);
+                            texto.Resaltar("\n--- Solicitudes ordenadas por Costo ---", ConsoleColor.Blue);
+                            foreach (var s in todasSolicitudes) { Console.WriteLine($"ID: {s.ID} | Costo: Q{s.Total:F2}"); }
+                            break;
+
+                        case 2:
+                            if (admin.Tecnicos.Count == 0) { texto.MensajeError("No hay técnicos suficientes."); break; }
+                            admin.TecnicosPorServicios(admin.Tecnicos);
+                            texto.Resaltar("\n--- Técnicos ordenados por Servicios ---", ConsoleColor.Blue);
+                            foreach (var t in admin.Tecnicos) { Console.WriteLine($"Técnico: {t.Nombre} | Servicios: {t.ServiciosFinalizados}"); }
+                            break;
+
+                        case 3:
+                            if (admin.Repuestos.Count == 0) { texto.MensajeError("No hay repuestos suficientes."); break; }
+                            admin.RepuestosPorExistencia(admin.Repuestos);
+                            texto.Resaltar("\n--- Repuestos ordenados por Existencia ---", ConsoleColor.Blue);
+                            foreach (var r in admin.Repuestos) { Console.WriteLine($"Repuesto: {r.Descripcion} | Existencias: {r.Existencias}"); }
+                            break;
+
+                        case 4:
+                            if (todasSolicitudes.Count == 0) { texto.MensajeError("No hay solicitudes suficientes."); break; }
+                            admin.SolicitudesPorFecha(todasSolicitudes, 0, todasSolicitudes.Count - 1);
+                            texto.Resaltar("\n--- Solicitudes ordenadas por Fecha (Quick Sort) ---", ConsoleColor.Blue);
+                            foreach (var s in todasSolicitudes) { Console.WriteLine($"ID: {s.ID} | Fecha: {s.FechaEntrada}"); }
+                            break;
+
+                        case 5: break;
+                        default: fallo.OpcionInvalida(); break;
+                    }
+                    texto.Pausa();
+                } while (opOrd != 5);
+            }
+
+            void MenuBusquedas()
+            {
+                int opBus;
+                string busNombre, idSolicitud;
+                do
+                {
+                    texto.Titulo("Módulo de Búsquedas", ConsoleColor.DarkBlue);
+                    do
+                    {
+                        Console.WriteLine("Seleccione el tipo de búsqueda: ");
+                        texto.OpcionMenu("1.", "Clientes por nombre parcial", ConsoleColor.Blue);
+                        texto.OpcionMenu("2.", "Solicitud por Código ID", ConsoleColor.Blue);
+                        texto.OpcionMenu("3.", "Regresar al menú principal", ConsoleColor.Red);
+
+                        if (!int.TryParse(Console.ReadLine(), out opBus))
+                        {
+                            fallo.IntFalse();
+                        }
+                        else { break; }
+                    } while (true);
+
+                    switch (opBus)
+                    {
+                        case 1:
+                            do
+                            {
+                                Console.WriteLine("Ingrese parte del nombre del cliente a buscar (no mayor a 50 caracteres): ");
+                                busNombre = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(busNombre))
+                                {
+                                    if (busNombre.Length > 50)
+                                    {
+                                        fallo.DatoFueraRando();
+                                    }else { break; }                                  
+                                }else { fallo.DatoVacio(); }
+                            } while (true);
+                            admin.BusquedaCliente(busNombre);
+                            break;
+
+                        case 2:
+                            var listaSol = admin.Urgentes.Concat(admin.Espera).ToList();
+                            if (listaSol.Count == 0) { texto.MensajeError("No hay solicitudes."); break; }
+
+                            do
+                            {
+                                Console.WriteLine("Ingrese el id a buacar (ej. CLT12345): ");
+                                idSolicitud = Console.ReadLine();
+                                if (string.IsNullOrEmpty(idSolicitud))
+                                {
+                                    fallo.DatoVacio();
+                                }
+                                else
+                                {
+                                    if (idSolicitud.Length != 8)
+                                    {
+                                        fallo.DatoFueraRando();
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                            } while (true);
+                            admin.BusquedaId(idSolicitud);
+                            break;
+
+                        case 3: break;
+                        default: fallo.OpcionInvalida(); break;
+                    }
+                } while (opBus != 3);
+            }
+            void MenuReportes()
+            {
+                int opRep;
+                Reportes repManager = new Reportes();
+
+                do
+                {
+                    texto.Titulo("Módulo de Reportes y Estadísticas", ConsoleColor.DarkBlue);
+                    Console.WriteLine("Seleccione un reporte a generar: ");
+                    texto.OpcionMenu("1.", "Solicitudes en espera (separadas por prioridad)", ConsoleColor.Blue);
+                    texto.OpcionMenu("2.", "Solicitudes activas, finalizadas y canceladas", ConsoleColor.Blue);
+                    texto.OpcionMenu("3.", "Técnicos disponibles y con carga completa", ConsoleColor.Blue);
+                    texto.OpcionMenu("4.", "Técnico con más servicios finalizados", ConsoleColor.Blue);
+                    texto.OpcionMenu("5.", "Matriz semanal de carga de trabajo", ConsoleColor.Blue);
+                    texto.OpcionMenu("6.", "Regresar al menú principal", ConsoleColor.Red);
+
+                    if (!int.TryParse(Console.ReadLine(), out opRep))
+                    {
+                        fallo.IntFalse();
+                        continue;
+                    }
+
+                    switch (opRep)
+                    {
+                        case 1:
+                            texto.Resaltar("\n--- SOLICITUDES URGENTES EN ESPERA ---", ConsoleColor.DarkBlue);
+                            if (admin.Urgentes.Count == 0) Console.WriteLine("No hay solicitudes urgentes pendientes.");
+                            else foreach (var s in admin.Urgentes) { s.MostrarInfo(); Console.WriteLine("---"); }
+
+                            texto.Resaltar("\n--- SOLICITUDES NORMALES EN ESPERA ---", ConsoleColor.DarkBlue);
+                            if (admin.Solicitudes.Count == 0) Console.WriteLine("No hay solicitudes normales pendientes.");
+                            else foreach (var s in admin.Espera) { s.MostrarInfo(); Console.WriteLine("---"); }
+                            break;
+
+                        case 3:
+                            repManager.MostrarTecnicosDisponibles(admin.Tecnicos);
+                            break;
+
+                        case 4:
+                            repManager.MostrarTecnicoTop(admin.Tecnicos);
+                            break;
+
+                        case 5:
+                            repManager.MostrarHistorialSemanal(admin.Tecnicos);
+                            break;
+
+                        case 6: break;
+                        default: fallo.OpcionInvalida(); break;
+                    }
+                    texto.Pausa();
+                } while (opRep != 6);
             }
 
             //---------------------------
