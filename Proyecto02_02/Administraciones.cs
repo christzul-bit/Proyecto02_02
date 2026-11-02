@@ -59,8 +59,8 @@ namespace Proyecto02_02
 		}
 		public enum tipoEstado
 		{
-			Espera, Revision, Reparacion, Entregado, Cancelado
-		}
+            Recibido, EnEspera, Asignada, EnDiagnostico, EnReparacion, ListaParaEntregar, Entregado, Cancelado
+        }
 		private tipoEstado estado;
 
 		public tipoEstado Estado
@@ -68,7 +68,13 @@ namespace Proyecto02_02
 			get { return estado; }
 			set { estado = value; }
 		}
-		private Tecnico tecnicoAsignado;
+        private Stack<tipoEstado> historialEstados;
+        public Stack<tipoEstado> HistorialEstados
+        {
+            get { return historialEstados; }
+            set { historialEstados = value; }
+        }
+        private Tecnico tecnicoAsignado;
 
 		public Tecnico TecnicoAsignado
 		{
@@ -110,34 +116,49 @@ namespace Proyecto02_02
 			get { return total; }
 			set { total = value; }
 		}
-		public void MostrarInfo()
+        public bool ActualizarEstado(tipoEstado nuevoEstado)
+        {
+            if (estado == tipoEstado.Entregado || estado == tipoEstado.Cancelado)
+            {
+                return false;
+            }
+            historialEstados.Push(estado);
+            estado = nuevoEstado;
+            return true;
+        }
+        public bool DeshacerEstado()
+        {
+            if (estado == tipoEstado.Entregado || estado == tipoEstado.Cancelado)
+            {
+                return false;
+            }
+            if (historialEstados.Count > 0)
+            {
+                estado = historialEstados.Pop();
+                return true;
+            }
+            return false;
+        }
+        public void MostrarInfo()
 		{
             Console.WriteLine($"Codigo de solicitud: {ID} \n" +
-				$"Cliente asociado: {Propietario.Nombre} \n" +
-				$"(Se identifica con el id: {Propietario.ID}) \n" +
-				$"Equipo en presentado: {Dispositivo.Marca}, modelo {Dispositivo.Modelo} \n" +
-				$"(Se identifica con el id: {Dispositivo.ID})\n" +
+				$"Cliente asociado: {Propietario.Nombre} (Id: {Propietario.ID}) \n" +
+				$"Equipo en presentado: {Dispositivo.Marca}, {Dispositivo.Modelo} (Id: {Dispositivo.ID})\n" +
 				$"Descripcion del problema: {Descripcion}\n" +
 				$"Fecha de entrada: {FechaEntrada} \n" +
-				$"Fecha limite de entrega: {FechaLimite}");
-			if(Prioridad == false)
-			{
-                Console.WriteLine("Nivel de prioridad: Normal");
-			}else { Console.WriteLine("Nible de prioridad: Alta"); }
-            Console.WriteLine($"Estado de la solicitud: {Estado}\n" +
-				$"Tecnico asignado: {TecnicoAsignado}\n" +
-				$"Diagnostico: {Diagnostico}\n" +
-				$"Repuestos utilizados ---- \n" +
-				$"Costo por reparacion: {CostoReparacion} \n" +
-				$"Costo por uso de repuestos: {CostoRepuesto} \n" +
-				$"Costo Total: {Total}");
+				$"Fecha limite de entrega: {FechaLimite} \n" +
+				$"Prioridad: {(Prioridad ? "Urgente" : "Normal")} \n" +
+				$"Estado Actual: {Estado} \n" +
+				$"Técnico Asignado: {(TecnicoAsignado != null ? TecnicoAsignado.Nombre : "Sin asignar")} \n" +
+				$"Diagnóstico: {(string.IsNullOrEmpty(Diagnostico) ? "Pendiente" : Diagnostico)}\n" +
+				$"Costo Total: Q{Total:F2}");
 		}
 		public double CalcularTotal(double reparacion, double repuestos)
 		{
 			return reparacion + repuestos;
 		}
 		//metodo para actualizar estado. pendiente
-		public Solicitud(string id, Cliente porpietario, Equipo dispositivo, string descripcion, DateTime entrada, DateTime fin, bool prioridad, tipoEstado estado, Tecnico tecnico, string diagnostico, double costoReparacion, double costoRepuesto, double total)
+		public Solicitud(string id, Cliente porpietario, Equipo dispositivo, string descripcion, DateTime entrada, DateTime fin, bool prioridad)
 		{
 			ID = id;
 			Propietario = porpietario;
@@ -146,12 +167,13 @@ namespace Proyecto02_02
 			FechaEntrada = entrada;
 			FechaLimite = fin;
 			Prioridad = prioridad;
-			Estado = estado;
-			TecnicoAsignado = tecnico;
-			Diagnostico = diagnostico;
-			CostoReparacion = costoReparacion;
-			CostoRepuesto = costoRepuesto;
-			Total = total;
+			Estado = tipoEstado.Recibido;
+            historialEstados = new Stack<tipoEstado>();
+            TecnicoAsignado = null;
+			Diagnostico = "";
+			CostoReparacion = 0;
+			CostoRepuesto = 0;
+			Total = 0;
 		}
 	}
     internal class Administracion
@@ -254,21 +276,53 @@ namespace Proyecto02_02
 
 		private Random rand;
 
+        public void RegistrarSolicitud(Cliente cli, Equipo eq, string desc, bool esUrgente)
+        {
+            Solicitud nuevaSol = new Solicitud(GenerarId("SLC"), cli, eq, desc, DateTime.Now, DateTime.Now.AddDays(7), esUrgente);
+            nuevaSol.ActualizarEstado(Solicitud.tipoEstado.EnEspera);
 
-        public Tecnico AsignarTecnico()
+            if (esUrgente)
+            {
+                Urgentes.Enqueue(nuevaSol);
+            }
+            else
+            {
+                Espera.Enqueue(nuevaSol);
+            }
+        }
+        public bool AsignarTecnico(Solicitud sol, Tecnico tec)
 		{
-			return tecnicos[1];
-			//modificar luego
-		}
+            if (!tec.Disponibilidad || tec.TrabajosActivos >= tec.LimiteTrabajos)
+            {
+                return false;
+            }
+
+            if (tec.Especialidad != Tecnico.especial.Multitarea)
+            {
+                string tipoEq = sol.Dispositivo.GetType().Name;
+                if (!tec.Especialidad.ToString().Equals(tipoEq, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            sol.TecnicoAsignado = tec;
+            tec.TrabajosActivos++;
+            sol.ActualizarEstado(Solicitud.tipoEstado.Asignada);
+            return true;
+        }
 		public Solicitud SiguienteSolicitud()
 		{
-			return solicitudes.Dequeue();
-			//modificar luego
-		}
-		public void AdministrarSolicitud(Solicitud solicitud)
-		{
-			//modificar luego
-		}
+            if (Urgentes.Count > 0)
+            {
+                return Urgentes.Dequeue();
+            }
+            else if (Solicitudes.Count > 0)
+            {
+                return Solicitudes.Dequeue();
+            }
+            return null;
+        }
 		public string GenerarId(string inicio)
 		{
 			string idrand;

@@ -53,6 +53,7 @@ namespace Proyecto02_02
                             MenuEquipos();
                             break;
                         case 4:
+                            MenuSolicitudes();
                             break;
                         case 5:
                             break;
@@ -494,6 +495,173 @@ namespace Proyecto02_02
                     texto.Pausa();
                 } while (opcionEquipo != 3);
             }
+            void MenuSolicitudes()
+            {
+                int opSol;
+                string idEq, desc, idTec;
+                do
+                {
+                    texto.Titulo("Gestión de Solicitudes y Colas", ConsoleColor.DarkBlue);
+                    do
+                    {
+                        Console.WriteLine("Seleccione una opción: ");
+                        texto.OpcionMenu("1.", "Crear nueva solicitud de servicio", ConsoleColor.Blue);
+                        texto.OpcionMenu("2.", "Atender siguiente solicitud (Urgentes / Normales)", ConsoleColor.Blue);
+                        texto.OpcionMenu("3.", "Ver historial y Deshacer último estado de solicitud", ConsoleColor.Blue);
+                        texto.OpcionMenu("4.", "Regresar al menú principal", ConsoleColor.Red);
+
+                        if (!int.TryParse(Console.ReadLine(), out opSol))
+                        {
+                            fallo.IntFalse();
+                        }
+                        else { break; }
+                    } while (true);
+
+                    switch (opSol)
+                    {
+                        case 1:
+                            if (admin.Clientes.Count == 0 || admin.Equipos.Count == 0)
+                            {
+                                texto.MensajeError("Debe registrar al menos un cliente y un equipo previamente.");
+                                break;
+                            }
+                            do
+                            {
+                                Console.WriteLine("Ingrese el ID del equipo para la solicitud: ");
+                                idEq = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(idEq))
+                                {
+                                    if(idEq.Length != 8)
+                                    {
+                                        fallo.DatoFueraRando();
+                                    }else { break; }
+                                }
+                                else { fallo.DatoVacio(); }
+                            } while (true);
+                            Equipo equipoBuscado = admin.Equipos.FirstOrDefault(e => e.ID == idEq);
+                            if (equipoBuscado == null)
+                            {
+                                texto.MensajeError("Equipo no encontrado.");
+                                break;
+                            }
+
+                            bool equipoOcupado = admin.Urgentes.Any(s => s.Dispositivo.ID == idEq) ||
+                                                 admin.Espera.Any(s => s.Dispositivo.ID == idEq);
+                            if (equipoOcupado)
+                            {
+                                texto.MensajeError("El equipo ya cuenta con una solicitud activa en el sistema.");
+                                break;
+                            }
+
+                            do
+                            {
+                                Console.WriteLine("Ingrese la descripción del problema: ");
+                                desc = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(desc))
+                                {
+                                    if(desc.Length < 10 ||  desc.Length > 40)
+                                    {
+                                        fallo.DatoFueraRando();
+                                    }
+                                    else { break; }
+                                }else { fallo.DatoVacio(); }
+                            } while (true);
+
+                            Console.WriteLine("¿La solicitud es urgente? (1. Sí / 2. No): ");
+                            int pOp = int.TryParse(Console.ReadLine(), out int valP) ? valP : 2;
+                            bool esUrgente = (pOp == 1);
+
+                            admin.RegistrarSolicitud(equipoBuscado.Propietario, equipoBuscado, desc, esUrgente);
+                            texto.MensajeExito("Solicitud registrada y encolada correctamente.");
+                            break;
+
+                        case 2:
+                            Solicitud solAtender = admin.SiguienteSolicitud();
+                            if (solAtender == null)
+                            {
+                                texto.MensajeError("No hay solicitudes pendientes en las colas.");
+                                break;
+                            }
+
+                            texto.Resaltar("--- Siguiente Solicitud a Atender ---",ConsoleColor.DarkCyan);
+                            solAtender.MostrarInfo();
+
+                            if (admin.Tecnicos.Count == 0)
+                            {
+                                texto.MensajeError("No hay técnicos registrados para asignar.");
+                                break;
+                            }
+
+                            texto.Resaltar("\nTécnicos disponibles en el sistema:", ConsoleColor.DarkBlue);
+                            foreach (var t in admin.Tecnicos)
+                            {
+                                t.MostrarInfo();
+                                Console.WriteLine("-------------------");
+                            }
+
+                            do
+                            {
+                                Console.WriteLine("Ingrese el ID del técnico a asignar: ");
+                                idTec = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(idTec))
+                                {
+                                    if(idTec.Length != 8)
+                                    {
+                                        fallo.DatoFueraRando();
+                                    }else { break; }
+                                }
+                                else { fallo.DatoVacio(); }
+                            } while (true);
+                            Tecnico tecAsignar = admin.Tecnicos.FirstOrDefault(t => t.ID == idTec);
+
+                            if (tecAsignar != null && admin.AsignarTecnico(solAtender, tecAsignar))
+                            {
+                                texto.MensajeExito("Técnico asignado exitosamente y estado actualizado.");
+                            }
+                            else
+                            {
+                                texto.MensajeError("No se pudo asignar el técnico (verifique disponibilidad, carga o especialidad).");
+                                if (solAtender.Prioridad) admin.Urgentes.Enqueue(solAtender);
+                                else admin.Solicitudes.Enqueue(solAtender);
+                            }
+                            break;
+
+                        case 3:
+                            Console.WriteLine("Ingrese el ID de la solicitud a consultar: ");
+                            string idS = Console.ReadLine();
+                            Solicitud solHist = admin.Urgentes.FirstOrDefault(s => s.ID == idS) ??
+                                                admin.Solicitudes.FirstOrDefault(s => s.ID == idS);
+
+                            if (solHist == null)
+                            {
+                                texto.MensajeError("Solicitud no encontrada en colas activas.");
+                                break;
+                            }
+
+                            solHist.MostrarInfo();
+                            Console.WriteLine($"\nCantidad de estados anteriores en la Pila: {solHist.HistorialEstados.Count}");
+                            texto.Resaltar("¿Desea deshacer el último cambio de estado? (1. Sí / 2. No): ",ConsoleColor.Yellow);
+                            if (int.TryParse(Console.ReadLine(), out int rDeshacer) && rDeshacer == 1)
+                            {
+                                if (solHist.DeshacerEstado())
+                                {
+                                    texto.MensajeExito($"Estado revertido con éxito. Nuevo estado: {solHist.Estado}");
+                                }
+                                else
+                                {
+                                    texto.MensajeError("No se pudo deshacer (pila vacía o estado finalizado/entregado).");
+                                }
+                            }
+                            break;
+
+                        case 4: break;
+                        default: fallo.OpcionInvalida(); break;
+                    }
+                    texto.Pausa();
+                } while (opSol != 4);
+            }
+
+            //---------------------------
             MenuPrincipal();
 
         }

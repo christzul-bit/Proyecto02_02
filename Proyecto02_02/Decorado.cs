@@ -54,5 +54,12 @@ namespace Proyecto02_02
             Console.ResetColor();
             Console.ReadKey();
         }
+        public void Resaltar(string texto, ConsoleColor colorTex)
+        {
+            Console.ResetColor();
+            Console.ForegroundColor = colorTex;
+            Console.WriteLine(texto);
+            Console.ResetColor();
+        }
     }
 }
