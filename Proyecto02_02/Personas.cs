@@ -107,9 +107,42 @@ namespace Proyecto02_02
 			get { return disponibilidad; }
 			set { disponibilidad = value; }
 		}
-        //Atributo Trabajos activos, arreglo tipo Solicitud
-        //Atributo Trabajos finalizados, lista tipo Solicitud
-        //Atributo Calificacions, tipo - en debate
+        private int trabajosActivos;
+        public int TrabajosActivos
+        {
+            get { return trabajosActivos; }
+            set { trabajosActivos = value; }
+        }
+        private int serviciosFinalizados;
+        public int ServiciosFinalizados
+        {
+            get { return serviciosFinalizados; }
+            set { serviciosFinalizados = value; }
+        }
+        private List<double> calificacionPromedio;
+        public List<double> CalificacionPromedio
+        {
+            get { return calificacionPromedio; }
+            set { calificacionPromedio = value; }
+        }
+        private int limiteTrabajos;
+        public int LimiteTrabajos
+        {
+            get { return limiteTrabajos; }
+            set { limiteTrabajos = value; }
+        }
+		private double CalcularPromedio()
+		{
+
+            if (CalificacionPromedio == null || CalificacionPromedio.Count == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return CalificacionPromedio.Average();
+            }
+        }
 
         public override void MostrarInfo()
         {
@@ -117,13 +150,20 @@ namespace Proyecto02_02
             Console.WriteLine($"Codigo del tecnico: {ID} \n" +
                 $"Nombre del tecnico: {Nombre} \n" +
                 $"Especialidad: {Especialidad} \n" +
-                $"Disponibilidad: {Disponibilidad}");
+                $"Disponibilidad: {(Disponibilidad ? "Disponible" : "No disponible \n")}\n" +
+				$"Trabajos activos: {TrabajosActivos} / {LimiteTrabajos} \n" +
+                $"Servicios finalizados: {ServiciosFinalizados} \n" +
+				$"Calificación promedio: {CalcularPromedio()}");
         }
-		public Tecnico(string id, string name, especial Especial, bool disponibilidad) : 
+		public Tecnico(string id, string name, especial Especial, bool disponibilidad, int limite) : 
 			base(id, name)
 		{
 			Especialidad = Especial;
 			Disponibilidad = disponibilidad;
+			LimiteTrabajos = limite;
+			TrabajosActivos = 0;
+			ServiciosFinalizados = 0;
+			CalificacionPromedio = new List<double>();
 		}
 
 	}

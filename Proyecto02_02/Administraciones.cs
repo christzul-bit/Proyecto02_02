@@ -235,6 +235,21 @@ namespace Proyecto02_02
 			get { return clientes; }
 			set { clientes = value; }
 		}
+		private List<Equipo> equipos;
+
+		public List<Equipo> Equipos
+		{
+			get { return equipos; }
+			set { equipos = value; }
+		}
+		private List<Repuesto> repuestos;
+
+		public List<Repuesto> Repuestos
+		{
+			get { return repuestos; }
+			set { repuestos = value; }
+		}
+
 
 
 		private Random rand;
@@ -326,9 +341,131 @@ namespace Proyecto02_02
         }
 		public void BusquedaId(string id)
 		{
-			//====
-		}
-		public Administracion()
+			bool encontrado = false;
+            if (id.StartsWith("CLT"))
+            {
+                foreach (Cliente i in clientes)
+				{
+					if(id == i.ID)
+					{
+                        Console.WriteLine("Cliente encontrado: ");
+						i.MostrarInfo();
+						encontrado = true;
+					}
+				}
+				if(encontrado == false)
+				{
+                    Console.WriteLine("No existe un cliente con ese ID");
+				}
+            }
+            else if (id.StartsWith("TEC"))
+            {
+                foreach(Tecnico i in tecnicos)
+
+                {
+                    if (id == i.ID)
+                    {
+                        Console.WriteLine("Tecnico encontrado: ");
+                        i.MostrarInfo();
+                        encontrado = true;
+                    }
+                }
+                if (encontrado == false)
+                {
+                    Console.WriteLine("No existe un tecnico con ese ID");
+                }
+            }
+            else if (id.StartsWith("DIS"))
+            {
+                foreach(Equipo i in equipos)
+
+                {
+                    if (id == i.ID)
+                    {
+                        Console.WriteLine("Equipo encontrado: ");
+                        i.MostrarInfo();
+                        encontrado = true;
+                    }
+                }
+                if (encontrado == false)
+                {
+                    Console.WriteLine("No existe un equipo con ese ID");
+                }
+            }
+            else if (id.StartsWith("SLC"))
+            {
+                foreach(Solicitud i in solicitudes)
+
+                {
+                    if (id == i.ID)
+                    {
+                        Console.WriteLine("Solicitud encontrada: ");
+                        i.MostrarInfo();
+                        encontrado = true;
+                    }
+                }
+                if (encontrado == false)
+                {
+                    foreach (Solicitud i in Urgentes)
+
+                    {
+                        if (id == i.ID)
+                        {
+                            Console.WriteLine("Solicitud encontrada: ");
+                            i.MostrarInfo();
+                            encontrado = true;
+                        }
+                    }
+					if(encontrado == false)
+					{
+                        foreach (Solicitud i in Espera)
+
+                        {
+                            if (id == i.ID)
+                            {
+                                Console.WriteLine("Solicitud encontrada: ");
+                                i.MostrarInfo();
+                                encontrado = true;
+                            }
+                        }
+						if (!encontrado)
+						{
+                            Console.WriteLine("No existen solicitudes con ese ID");
+						}
+                    }
+
+                }
+            }
+            else
+            {
+                foreach (Repuesto i in Repuestos)
+
+                {
+                    if (id == i.ID)
+                    {
+                        Console.WriteLine("Repuesto encontrado: ");
+                        i.MostrarInfo();
+                        encontrado = true;
+                    }
+                }
+				if (!encontrado)
+				{
+                    Console.WriteLine("No existen repuestos con ese ID");
+				}
+            }
+        }
+        public bool ExisteNumeroSerie(string serie)
+        {
+            foreach (Equipo i in equipos)
+            {
+                if (i.Serie.Equals(serie, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public Administracion()
 		{
 			Tecnicos = new List<Tecnico>();
 			Solicitudes = new Queue<Solicitud>();
@@ -339,7 +476,9 @@ namespace Proyecto02_02
 			IdTecnicos = new List<string>();
 			IdRepuestos = new List<string>();
 			IdSolicitudes = new List<string>();
-            Clientes = new List<Cliente>();
+			Clientes = new List<Cliente>();
+			Repuestos = new List<Repuesto>();
+			Equipos = new List<Equipo>();
 			rand = new Random();
         }
 	}

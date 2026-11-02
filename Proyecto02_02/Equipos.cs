@@ -44,7 +44,13 @@ namespace Proyecto02_02
 			get { return propietario; }
 			set { propietario = value; }
 		}
-		private string accesorios;
+        private string estadoFisico;
+        public string EstadoFisico
+        {
+            get { return estadoFisico; }
+            set { estadoFisico = value; }
+        }
+        private string accesorios;
 
 		public string Accesorios
 		{
@@ -58,24 +64,24 @@ namespace Proyecto02_02
 				$"Numero de serie: {Serie} \n" +
 				$"Marca registrada: {Marca} \n" +
 				$"Modelo del equipo: {Modelo} \n" +
-				$"Propietario: {Propietario.Nombre} \n" +
-				$"(Con el id: {Propietario.ID})" +
+				$"Propietario: {Propietario.Nombre} (ID: {Propietario.ID}) \n" +
+				$"Estado fisico: {EstadoFisico} \n" +
 				$"Accesorios entregados: {Accesorios}");
 		}
-		//Modificar luego
 		public virtual double CalcularCosto()
 		{
 			return 0;
 		}
 
-		public Equipo(string id, string serie, string marca, string modelo, Cliente propietario, string accesorios)
+		public Equipo(string id, string serie, string marca, string modelo, Cliente propietario, string accesorios, string estadoFisico)
 		{
 			ID = id;
 			Serie = serie;
 			Marca = marca;
 			Modelo = modelo;
 			Propietario = propietario;
-			Accesorios = accesorios;
+            EstadoFisico = estadoFisico;
+            Accesorios = accesorios;
 		}
 	}
 	internal class Computadora : Equipo
@@ -97,7 +103,7 @@ namespace Proyecto02_02
         {
             return base.CalcularCosto();
         }
-		public Computadora(string id, string serie, string marca, string modelo, Cliente propietario, string accesorio, double costo) : base(id, serie, marca, modelo, propietario, accesorio)
+		public Computadora(string id, string serie, string marca, string modelo, Cliente propietario, string accesorio, string estadoFisico, double costo) : base(id, serie, marca, modelo, propietario, accesorio, estadoFisico)
 		{
 			Costo = costo;
 		}
@@ -121,7 +127,7 @@ namespace Proyecto02_02
         {
             return base.CalcularCosto();
         }
-        public Laptop(string id, string serie, string marca, string modelo, Cliente propietario, string accesorio, double costo) : base(id, serie, marca, modelo, propietario, accesorio)
+        public Laptop(string id, string serie, string marca, string modelo, Cliente propietario, string accesorio, string estadoFisico, double costo) : base(id, serie, marca, modelo, propietario, accesorio, estadoFisico)
         {
             Costo = costo;
         }
@@ -145,7 +151,7 @@ namespace Proyecto02_02
         {
             return base.CalcularCosto();
         }
-        public Impresora(string id, string serie, string marca, string modelo, Cliente propietario, string accesorio, double costo) : base(id, serie, marca, modelo, propietario, accesorio)
+        public Impresora(string id, string serie, string marca, string modelo, Cliente propietario, string accesorio, string estadoFisico, double costo) : base(id, serie, marca, modelo, propietario, accesorio, estadoFisico)
         {
             Costo = costo;
         }
@@ -169,7 +175,7 @@ namespace Proyecto02_02
         {
             return base.CalcularCosto();
         }
-        public Telefono(string id, string serie, string marca, string modelo, Cliente propietario, string accesorio, double costo) : base(id, serie, marca, modelo, propietario, accesorio)
+        public Telefono(string id, string serie, string marca, string modelo, Cliente propietario, string accesorio, string estadoFisico, double costo) : base(id, serie, marca, modelo, propietario, accesorio, estadoFisico)
         {
             Costo = costo;
         }
