@@ -16,6 +16,7 @@ namespace Proyecto02_02
             Decorar texto = new Decorar();
             Excepciones fallo = new Excepciones();
             Administracion admin = new Administracion();
+            Reportes repManager = new Reportes();
             void MenuPrincipal()
             {
                 int opcion;
@@ -31,12 +32,11 @@ namespace Proyecto02_02
                         texto.OpcionMenu("3.", "Gestion equipos", ConsoleColor.Cyan);
                         texto.OpcionMenu("4.", "Gestion solicitudes", ConsoleColor.Cyan);
                         texto.OpcionMenu("5.", "Gestion repuestos", ConsoleColor.Cyan);
-                        texto.OpcionMenu("6.", "Atencion de colas", ConsoleColor.Cyan);
-                        texto.OpcionMenu("7.", "Ordenamientos", ConsoleColor.Cyan);
-                        texto.OpcionMenu("8.", "Busquedas", ConsoleColor.Cyan);
-                        texto.OpcionMenu("9.", "Reportes", ConsoleColor.Cyan);
-                        texto.OpcionMenu("10.", "Generar datos de prueba", ConsoleColor.Cyan);
-                        texto.OpcionMenu("11.", "Salir", ConsoleColor.Red);
+                        texto.OpcionMenu("6.", "Ordenamientos", ConsoleColor.Cyan);
+                        texto.OpcionMenu("7.", "Busquedas", ConsoleColor.Cyan);
+                        texto.OpcionMenu("8.", "Reportes", ConsoleColor.Cyan);
+                        texto.OpcionMenu("9.", "Generar datos de prueba", ConsoleColor.Cyan);
+                        texto.OpcionMenu("10.", "Salir", ConsoleColor.Red);
                         if(!int.TryParse(Console.ReadLine(), out opcion)){
                             fallo.IntFalse();
                         }else { break; }
@@ -56,24 +56,24 @@ namespace Proyecto02_02
                             MenuSolicitudes();
                             break;
                         case 5:
+                            MenuRepuestos();
                             break;
                         case 6:
-                            break;
-                        case 7:
                             MenuOrdenamientos();
                             break;
-                        case 8:
+                        case 7:
                             MenuBusquedas();
                             break;
-                        case 9:
+                        case 8:
                             MenuReportes();
                             break;
-                        case 10:
+                        case 9:
+                            GenerarDatos();
                             break;
-                        case 11: break;
+                        case 10: break;
                         default: fallo.OpcionInvalida(); break;
                     }
-                } while (opcion != 11);
+                } while (opcion != 10);
             }
             void MenuClientes()
             {
@@ -136,11 +136,11 @@ namespace Proyecto02_02
                             } while (true);
                             do
                             {
-                                Console.WriteLine("Ingrese el correo electronico del cliente (menos de 20 caracteres): ");
+                                Console.WriteLine("Ingrese el correo electronico del cliente (menos de 30 caracteres): ");
                                 correoElectronico = Console.ReadLine().Trim();
                                 if (!string.IsNullOrEmpty(correoElectronico))
                                 {
-                                    if (correoElectronico.Length > 20)
+                                    if (correoElectronico.Length > 30)
                                     {
                                         fallo.DatoFueraRando();
                                     }
@@ -502,6 +502,7 @@ namespace Proyecto02_02
             {
                 int opSol;
                 string idEq, desc, idTec;
+                Solicitud cambio;
                 do
                 {
                     texto.Titulo("Gestión de Solicitudes y Colas", ConsoleColor.DarkBlue);
@@ -511,7 +512,8 @@ namespace Proyecto02_02
                         texto.OpcionMenu("1.", "Crear nueva solicitud de servicio", ConsoleColor.Blue);
                         texto.OpcionMenu("2.", "Atender siguiente solicitud (Urgentes / Normales)", ConsoleColor.Blue);
                         texto.OpcionMenu("3.", "Ver historial y Deshacer último estado de solicitud", ConsoleColor.Blue);
-                        texto.OpcionMenu("4.", "Regresar al menú principal", ConsoleColor.Red);
+                        texto.OpcionMenu("4.", "Cancelar solicitud", ConsoleColor.Blue);
+                        texto.OpcionMenu("5.", "Regresar al menú principal", ConsoleColor.Red);
 
                         if (!int.TryParse(Console.ReadLine(), out opSol))
                         {
@@ -534,10 +536,10 @@ namespace Proyecto02_02
                                 idEq = Console.ReadLine();
                                 if (!string.IsNullOrEmpty(idEq))
                                 {
-                                    if(idEq.Length != 8)
+                                    if (idEq.Length != 8)
                                     {
                                         fallo.DatoFueraRando();
-                                    }else { break; }
+                                    } else { break; }
                                 }
                                 else { fallo.DatoVacio(); }
                             } while (true);
@@ -562,12 +564,12 @@ namespace Proyecto02_02
                                 desc = Console.ReadLine();
                                 if (!string.IsNullOrEmpty(desc))
                                 {
-                                    if(desc.Length < 10 ||  desc.Length > 40)
+                                    if (desc.Length < 10 || desc.Length > 40)
                                     {
                                         fallo.DatoFueraRando();
                                     }
                                     else { break; }
-                                }else { fallo.DatoVacio(); }
+                                } else { fallo.DatoVacio(); }
                             } while (true);
 
                             Console.WriteLine("¿La solicitud es urgente? (1. Sí / 2. No): ");
@@ -586,48 +588,94 @@ namespace Proyecto02_02
                                 break;
                             }
 
-                            texto.Resaltar("--- Siguiente Solicitud a Atender ---",ConsoleColor.DarkCyan);
+                            texto.Resaltar("--- Siguiente Solicitud a Atender ---", ConsoleColor.DarkCyan);
                             solAtender.MostrarInfo();
-
                             if (admin.Tecnicos.Count == 0)
                             {
                                 texto.MensajeError("No hay técnicos registrados para asignar.");
                                 break;
                             }
-
-                            texto.Resaltar("\nTécnicos disponibles en el sistema:", ConsoleColor.DarkBlue);
-                            foreach (var t in admin.Tecnicos)
+                            else if (solAtender.Estado == Solicitud.tipoEstado.EnEspera)
                             {
-                                t.MostrarInfo();
-                                Console.WriteLine("-------------------");
-                            }
-
-                            do
-                            {
-                                Console.WriteLine("Ingrese el ID del técnico a asignar: ");
-                                idTec = Console.ReadLine();
-                                if (!string.IsNullOrEmpty(idTec))
+                                texto.Resaltar("\nTécnicos disponibles en el sistema:", ConsoleColor.DarkBlue);
+                                foreach (var t in admin.Tecnicos)
                                 {
-                                    if(idTec.Length != 8)
-                                    {
-                                        fallo.DatoFueraRando();
-                                    }else { break; }
+                                    t.MostrarInfo();
+                                    Console.WriteLine("-------------------");
                                 }
-                                else { fallo.DatoVacio(); }
-                            } while (true);
-                            Tecnico tecAsignar = admin.Tecnicos.FirstOrDefault(t => t.ID == idTec);
 
-                            if (tecAsignar != null && admin.AsignarTecnico(solAtender, tecAsignar))
+                                do
+                                {
+                                    Console.WriteLine("Ingrese el ID del técnico a asignar: ");
+                                    idTec = Console.ReadLine();
+                                    if (!string.IsNullOrEmpty(idTec))
+                                    {
+                                        if (idTec.Length != 8)
+                                        {
+                                            fallo.DatoFueraRando();
+                                        }
+                                        else { break; }
+                                    }
+                                    else { fallo.DatoVacio(); }
+                                } while (true);
+                                Tecnico tecAsignar = admin.Tecnicos.FirstOrDefault(t => t.ID == idTec);
+
+                                if (tecAsignar != null && admin.AsignarTecnico(solAtender, tecAsignar))
+                                {
+                                    texto.MensajeExito("Técnico asignado exitosamente y estado actualizado.");
+                                }
+                                else
+                                {
+                                    texto.MensajeError("No se pudo asignar el técnico (verifique disponibilidad, carga o especialidad).");
+                                    if (solAtender.Prioridad) admin.Urgentes.Enqueue(solAtender);
+                                    else admin.Solicitudes.Enqueue(solAtender);
+                                }
+                                break;
+                            } else if (solAtender.Estado != Solicitud.tipoEstado.Cancelado && solAtender.Estado != Solicitud.tipoEstado.Entregado)
                             {
-                                texto.MensajeExito("Técnico asignado exitosamente y estado actualizado.");
-                            }
-                            else
+                                if(solAtender.Estado == Solicitud.tipoEstado.Asignada)
+                                {
+                                    solAtender.ActualizarEstado(Solicitud.tipoEstado.EnDiagnostico);
+                                }else if (solAtender.Estado == Solicitud.tipoEstado.EnDiagnostico)
+                                {
+                                    solAtender.ActualizarEstado(Solicitud.tipoEstado.EnReparacion);
+                                }else if (solAtender.Estado == Solicitud.tipoEstado.EnReparacion)
+                                {
+                                    solAtender.ActualizarEstado(Solicitud.tipoEstado.ListaParaEntregar);
+                                }else
+                                {
+                                    solAtender.ActualizarEstado(Solicitud.tipoEstado.Entregado);
+                                }
+                                texto.MensajeExito("Estado actualizado");
+                                if(solAtender.Estado == Solicitud.tipoEstado.Cancelado)
+                                {
+                                    if (solAtender.Prioridad)
+                                    {
+                                        cambio = admin.Urgentes.Dequeue();
+                                        repManager.Cancelados.Add(cambio);
+                                    }else { 
+                                        cambio = admin.Solicitudes.Dequeue();
+                                        repManager.Cancelados.Add(cambio);
+                                    }
+                                }else if(solAtender.Estado == Solicitud.tipoEstado.Entregado)
+                                {
+                                    if (solAtender.Prioridad)
+                                    {
+                                        cambio = admin.Urgentes.Dequeue();
+                                        repManager.Cancelados.Add(cambio);
+                                    }
+                                    else
+                                    {
+                                        cambio = admin.Solicitudes.Dequeue();
+                                        repManager.Cancelados.Add(cambio);
+                                    }
+                                }
+                                break;
+                            } else
                             {
-                                texto.MensajeError("No se pudo asignar el técnico (verifique disponibilidad, carga o especialidad).");
-                                if (solAtender.Prioridad) admin.Urgentes.Enqueue(solAtender);
-                                else admin.Solicitudes.Enqueue(solAtender);
+                                texto.MensajeError("La solicitud ya fue entregada o cancelada");
+                                break;
                             }
-                            break;
 
                         case 3:
                             Console.WriteLine("Ingrese el ID de la solicitud a consultar: ");
@@ -658,10 +706,92 @@ namespace Proyecto02_02
                             break;
 
                         case 4: break;
+                        case 5: break;
                         default: fallo.OpcionInvalida(); break;
                     }
                     texto.Pausa();
-                } while (opSol != 4);
+                } while (opSol != 5);
+            }
+            void MenuRepuestos()
+            {
+                int opRep;
+                string descRep;
+                int existencias;
+                double precio;
+
+                do
+                {
+                    texto.Titulo("Gestión de Repuestos", ConsoleColor.DarkBlue);
+                    do
+                    {
+                        Console.WriteLine("Seleccione una opción: ");
+                        texto.OpcionMenu("1.", "Registrar nuevo repuesto", ConsoleColor.Blue);
+                        texto.OpcionMenu("2.", "Mostrar lista de repuestos", ConsoleColor.Blue);
+                        texto.OpcionMenu("3.", "Regresar al menú principal", ConsoleColor.Red);
+
+                        if (!int.TryParse(Console.ReadLine(), out opRep))
+                        {
+                            fallo.IntFalse();
+                        }
+                        else { break; }
+                    } while (true);
+
+                    switch (opRep)
+                    {
+                        case 1:
+                            do
+                            {
+                                Console.WriteLine("Ingrese la descripción del repuesto: ");
+                                descRep = Console.ReadLine();
+                                if (string.IsNullOrEmpty(descRep)) fallo.DatoVacio();
+                                else { break; }
+                            } while (true);
+
+                            do
+                            {
+                                Console.WriteLine("Ingrese la cantidad en existencia (número entero mayor o igual a 0): ");
+                                if (!int.TryParse(Console.ReadLine(), out existencias) || existencias < 0)
+                                {
+                                    fallo.IntFalse();
+                                }
+                                else { break; }
+                            } while (true);
+
+                            do
+                            {
+                                Console.WriteLine("Ingrese el precio unitario (mayor a 0): ");
+                                if (!double.TryParse(Console.ReadLine(), out precio) || precio <= 0)
+                                {
+                                    fallo.IntFalse();
+                                }
+                                else { break; }
+                            } while (true);
+
+                            Repuesto nuevoRep = new Repuesto(admin.GenerarId("REP"), descRep, existencias, precio);
+                            admin.Repuestos.Add(nuevoRep);
+                            texto.MensajeExito("Repuesto registrado correctamente.");
+                            break;
+
+                        case 2:
+                            if (admin.Repuestos.Count == 0)
+                            {
+                                texto.MensajeError("No hay repuestos registrados.");
+                            }
+                            else
+                            {
+                                foreach (var r in admin.Repuestos)
+                                {
+                                    r.MostrarInfo();
+                                    Console.WriteLine(new string('-', 30));
+                                }
+                            }
+                            break;
+
+                        case 3: break;
+                        default: fallo.OpcionInvalida(); break;
+                    }
+                    texto.Pausa();
+                } while (opRep != 3);
             }
             void MenuOrdenamientos()
             {
@@ -792,12 +922,12 @@ namespace Proyecto02_02
                         case 3: break;
                         default: fallo.OpcionInvalida(); break;
                     }
+                    texto.Pausa();
                 } while (opBus != 3);
             }
             void MenuReportes()
             {
                 int opRep;
-                Reportes repManager = new Reportes();
 
                 do
                 {
@@ -820,14 +950,32 @@ namespace Proyecto02_02
                     {
                         case 1:
                             texto.Resaltar("\n--- SOLICITUDES URGENTES EN ESPERA ---", ConsoleColor.DarkBlue);
-                            if (admin.Urgentes.Count == 0) Console.WriteLine("No hay solicitudes urgentes pendientes.");
+                            if (admin.Urgentes.Count == 0) texto.MensajeError("No hay solicitudes urgentes pendientes.");
                             else foreach (var s in admin.Urgentes) { s.MostrarInfo(); Console.WriteLine("---"); }
 
                             texto.Resaltar("\n--- SOLICITUDES NORMALES EN ESPERA ---", ConsoleColor.DarkBlue);
-                            if (admin.Solicitudes.Count == 0) Console.WriteLine("No hay solicitudes normales pendientes.");
+                            if (admin.Solicitudes.Count == 0) texto.MensajeError("No hay solicitudes normales pendientes.");
                             else foreach (var s in admin.Espera) { s.MostrarInfo(); Console.WriteLine("---"); }
                             break;
-
+                        case 2:
+                            texto.Resaltar("\n--- SOLICITUDES ACTIVAS ---", ConsoleColor.DarkBlue);
+                            if (admin.Solicitudes.Count == 0 && admin.Urgentes.Count == 0) texto.MensajeError("No hay solicitudes activas.");
+                            else {
+                                foreach (var s in admin.Urgentes) { s.MostrarInfo(); Console.WriteLine("---"); }
+                                foreach (var s in admin.Espera) { s.MostrarInfo(); Console.WriteLine("---"); } }
+                            texto.Resaltar("\n--- SOLICITUDES CANCELADAS ---", ConsoleColor.DarkBlue);
+                            if (repManager.Cancelados.Count == 0) texto.MensajeError("No hay solicitudes canceladas.");
+                            else
+                            {
+                                foreach (var s in repManager.Cancelados) { s.MostrarInfo(); Console.WriteLine("---"); }
+                            }
+                            texto.Resaltar("\n--- SOLICITUDES ENTREGADAS ---", ConsoleColor.DarkBlue);
+                            if (repManager.Completados.Count == 0) texto.MensajeError("No hay solicitudes completadas.");
+                            else
+                            {
+                                foreach (var s in repManager.Completados) { s.MostrarInfo(); Console.WriteLine("---"); }
+                            }
+                            break;
                         case 3:
                             repManager.MostrarTecnicosDisponibles(admin.Tecnicos);
                             break;
@@ -845,6 +993,82 @@ namespace Proyecto02_02
                     }
                     texto.Pausa();
                 } while (opRep != 6);
+            }
+            void GenerarDatos()
+            {
+                    List<string> nombresRandom = new List<string> { "CarlosPerez", "Maria Lopez", "Juan Morales", "Ana Cifuentes", "Pedro Ramirez", "Lucia Castillo" };
+                    List<string> marcasLaptop = new List<string> { "Lenovo", "Dell", "HP", "Asus", "Acer" };
+                    List<string> modelosLaptop = new List<string> { "ThinkPad", "Inspiron", "Pavilion", "ZenBook", "Aspire" };
+                    List<string> marcasComp = new List<string> { "Dell", "HP", "Apple", "Lenovo" };
+                    List<string> modelosComp = new List<string> { "OptiPlex", "ProDesk", "iMac", "ThinkCentre" };
+                    List<string> problemas = new List<string> { "No enciende tras fallo eléctrico", "Pantalla azul recurrente y lenta", "Mantenimiento preventivo general", "Teclado no responde correctamente", "Sobrecalentamiento y ruido en ventilador" };
+                    List<string> repuestosNombres = new List<string> { "Memoria RAM 8GB DDR4", "Disco SSD 500GB", "Pasta térmica de alto rendimiento", "Batería de reemplazo", "Cargador original 65W" };
+
+                    Random rnd = new Random();
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        int idxNombre = rnd.Next(nombresRandom.Count);
+                        string nombreSel = nombresRandom[idxNombre];
+                        nombresRandom.RemoveAt(idxNombre);
+
+                        int telefonoGen = rnd.Next(10000000, 99999999);
+                        string correoGen = nombreSel.ToLower().Replace(" ", "") + "@gmail.com";
+                        Cliente.tipoClientes tipoGen = (i % 2 == 0) ? Cliente.tipoClientes.Persona : Cliente.tipoClientes.Estudiante;
+
+                        Cliente cliPrueba = new Cliente(admin.GenerarId("CLT"), nombreSel, telefonoGen, correoGen, tipoGen, 0);
+                        admin.Clientes.Add(cliPrueba);
+                    }
+
+                    if (admin.Clientes.Count > 0)
+                    {
+                        Cliente cliAsociado = admin.Clientes[rnd.Next(admin.Clientes.Count)];
+
+                        string marcaL = marcasLaptop[rnd.Next(marcasLaptop.Count)];
+                        string modeloL = modelosLaptop[rnd.Next(modelosLaptop.Count)];
+                        string serieL = "SN" + rnd.Next(100000, 999999);
+                        Laptop eqLaptop = new Laptop(admin.GenerarId("DIS"), serieL, marcaL, modeloL, cliAsociado, "Cargador y estuche", "Buen estado general", 200.0);
+                        admin.Equipos.Add(eqLaptop);
+
+                        string marcaC = marcasComp[rnd.Next(marcasComp.Count)];
+                        string modeloC = modelosComp[rnd.Next(modelosComp.Count)];
+                        string serieC = "SN" + rnd.Next(100000, 999999);
+                        Computadora eqComp = new Computadora(admin.GenerarId("DIS"), serieC, marcaC, modeloC, cliAsociado, "Ninguno", "Rayones leves en carcasa", 150.0);
+                        admin.Equipos.Add(eqComp);
+
+                        for (int j = 0; j < 3; j++)
+                        {
+                            int idxRep = rnd.Next(repuestosNombres.Count);
+                            string repNom = repuestosNombres[idxRep];
+                            repuestosNombres.RemoveAt(idxRep);
+
+                            int existenciasGen = rnd.Next(5, 25);
+                            double precioGen = rnd.Next(150, 600);
+
+                            Repuesto repPrueba = new Repuesto(admin.GenerarId("REP"), repNom, existenciasGen, precioGen);
+                            admin.Repuestos.Add(repPrueba);
+                        }
+
+                        Tecnico tec1 = new Tecnico(admin.GenerarId("TEC"), "Estuardo Morales Soto", Tecnico.especial.Laptop, true, 3);
+                        Tecnico tec2 = new Tecnico(admin.GenerarId("TEC"), "Claudia Maria Cifuentes", Tecnico.especial.Computadora, true, 3);
+                        admin.Tecnicos.Add(tec1);
+                        admin.Tecnicos.Add(tec2);
+
+                        string desc1 = problemas[rnd.Next(problemas.Count)];
+                        string desc2 = problemas[rnd.Next(problemas.Count)];
+
+                        bool esUrgente1 = (rnd.Next(0, 2) == 1);
+                        bool esUrgente2 = (rnd.Next(0, 2) == 1);
+
+                        admin.RegistrarSolicitud(cliAsociado, eqLaptop, desc1, esUrgente1);
+                        admin.RegistrarSolicitud(cliAsociado, eqComp, desc2, esUrgente2);
+
+                        texto.MensajeExito("¡Datos de prueba cargados con éxito!");
+                    }
+                else { 
+                    texto.MensajeError("No se pudieron generar los datos de prueba.");
+                }
+                texto.Pausa();
             }
 
             //---------------------------

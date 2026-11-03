@@ -287,7 +287,7 @@ namespace Proyecto02_02
             }
             else
             {
-                Espera.Enqueue(nuevaSol);
+                Solicitudes.Enqueue(nuevaSol);
             }
         }
         public bool AsignarTecnico(Solicitud sol, Tecnico tec)
@@ -315,11 +315,11 @@ namespace Proyecto02_02
 		{
             if (Urgentes.Count > 0)
             {
-                return Urgentes.Dequeue();
+                return Urgentes.Peek();
             }
             else if (Solicitudes.Count > 0)
             {
-                return Solicitudes.Dequeue();
+                return Solicitudes.Peek();
             }
             return null;
         }
@@ -642,7 +642,15 @@ namespace Proyecto02_02
 			get { return completados; }
 			set { completados = value; }
 		}
-		private List<Repuesto> repuestos;
+        private List<Solicitud> cancelados;
+
+        public List<Solicitud> Cancelados
+        {
+            get { return cancelados; }
+            set { cancelados = value; }
+        }
+
+        private List<Repuesto> repuestos;
 
 		public List<Repuesto> Repuestos
 		{
@@ -688,7 +696,15 @@ namespace Proyecto02_02
                 Console.WriteLine(new string('-', 30));
             }
 		}
-		public void MostrarTecnicosDisponibles(List<Tecnico> tecnicos) {
+        public void MostrarCancelados()
+        {
+            foreach (Solicitud i in Cancelados)
+            {
+                i.MostrarInfo();
+                Console.WriteLine(new string('-', 30));
+            }
+        }
+        public void MostrarTecnicosDisponibles(List<Tecnico> tecnicos) {
             Console.WriteLine("\n--- REPORTE DE TÉCNICOS (DISPONIBLES Y CARGA COMPLETA) ---");
             foreach (var t in tecnicos)
             {
@@ -703,8 +719,6 @@ namespace Proyecto02_02
             Console.WriteLine($"\n--- TÉCNICO CON MÁS SERVICIOS FINALIZADOS ---");
             Console.WriteLine($"Nombre: {top.Nombre} | Servicios finalizados: {top.ServiciosFinalizados} | Calificación: {top.CalificacionPromedio:F1}");
         }
-        public void MostrarEquiposAtendidos() { }
-		public void MostrarIngresosTotales() { }
 		public void MostrarHistorialSemanal(List<Tecnico> tecnicos) {
             if (tecnicos == null || tecnicos.Count == 0)
             {
@@ -742,7 +756,6 @@ namespace Proyecto02_02
 
                 for (int j = 0; j < columnas; j++)
                 {
-                    // Asignamos una carga proporcional o simulada controlada basada en trabajos activos
                     int carga = (j == 0) ? tecnicos[i].TrabajosActivos : rand.Next(0, 4);
                     HistorialSemanal[i, j] = carga;
 
@@ -768,6 +781,7 @@ namespace Proyecto02_02
         public Reportes()
 		{
 			Completados = new List<Solicitud>();
+            Cancelados = new List<Solicitud>();
             Repuestos = new List<Repuesto>();
         }
 	}
